@@ -1,86 +1,161 @@
-const couchImg = document.querySelector("item__img");
-const couchtitle = document.getElementById('title');
-const couchprice = document.getElementById('price');
-const couchdescription = document.getElementById('description');
-const couchcolors = document.getElementById('colors');
+// Retrieve the id transmitted in the links to perform a request with this one as a parameter
+var actualUrl = document.location.href;
+actualUrl = new URL(actualUrl);
+var id = actualUrl.searchParams.get("id");
 
-let id = new URLSearchParams(window.location.search).get('id')
-console.log(id)
+const url = "http://localhost:3000/api/products/" + id;
 
-let imageURL = "";
-let imageAlt = "";
-
-
-fetch("http://localhost:3000/api/products/"+ id)
-  .then(res => res.json())
-  .then(data => {
-    
-    image[0].innerHTML = `<img src="${data.imageUrl}" alt="${data.altTxt}">`;
-    imageURL = data.imageUrl;
-    imageAlt = data.altTxt;
-    title.innerHTML = `<h1>${data.name}</h1>`;
-    price.innerText = `${data.price}`;
-    description.innerText = `${data.description}`;
-
-    for (number in data.colors) {
-      colors.options[colors.options.length] = new Option(
-        data.colors[number],
-        data.colors[number]
+/**
+ * Retrieve the article associated with the transmitted id to display the details later
+ * @param { String } url
+ * @return { Promise }
+ **/
+function ajax(url) {
+  fetch(url)
+    .then(function (res) {
+      if (res.ok) {
+        return res.json();
+      }
+    })
+    .then(function (article) {
+      createItemPage(
+        article.imageUrl,
+        article.altTxt,
+        article.name,
+        article.price,
+        article.description,
+        article.colors
       );
-    }
-  })
-   
-  .catch(error => console.log(error));
+      manageBasket(id, article.name);
+    })
+    .catch(function (err) {
+      console.log(err);
+    });
+}
+ajax(url);
 
+/**
+ * 
+Filling of the article page with the information retrieved via the id entered
+ * @param { String } imageUrl
+ * @param { String } imageAlt
+ * @param { String } name
+ * @param { String } price
+ * @param { String } description
+ * @param { String } colors
+ **/
+function createItemPage(
+  imageUrl,
+  imageAlt,
+  name,
+  price,
+  description,
+  colors
+) {
+  //   edit page title
+  document.title = name;
 
-const selectQuantity = document.getElementById('quantity');
-const selectColors = document.getElementById('colors');
+  //   added article image
+  let item__img = document.getElementsByClassName("item__img");
+  let pictureItem = document.createElement("img");
+  pictureItem.src = imageUrl;
+  pictureItem.alt = imageAlt;
+  item__img[0].append(pictureItem);
 
-const addToCart = document.getElementById('addToCart');
-addToCart.addEventListener('click', (event) => {
-  event.preventDefault();
+  //  add article title
+  document.getElementById("title").textContent = name;
 
-  const selection = {
-    id: newID,
-    image: imageURL,
-    alt: imageAlt,
-    name: title.textContent,
-    price: price.textContent,
-    color: selectColors.value,
-    quantity: selectQuantity.value,
-  };
+  //   add item price
+  document.getElementById("price").textContent = price;
 
-  let productInLocalStorage =  JSON.parse(localStorage.getItem('product'));
+  //   added item description
+  document.getElementById("description").textContent = description;
 
-  const addProductLocalStorage = () => {
-  productInLocalStorage.push(selection);
-  localStorage.setItem('product', JSON.stringify(productInLocalStorage));
+  //   added available colors
+  let colorSelector = document.getElementById("colors");
+
+  for (let color of colors) {
+    let optionColor = document.createElement("option");
+    optionColor.value = color;
+    optionColor.textContent = color;
+    colorSelector.append(optionColor);
   }
+}
 
-  let addConfirm = () => {
-    alert('The product has been added to cart');
+// modal which notifies the user of the addition to the cart and can redirect him to the cart page
+const popUpCart = (name) => {
+  if (
+    window.confirm(
+      `You booked ${document.getElementById("quantity").value} ${name} ${
+        document.getElementById("colors").value
+      } To view your cart, click OK`
+    )
+  ) {
+    window.location.href = "cart.html";
   }
-  let update = false;
-  if (productInLocalStorage) {
-   productInLocalStorage.forEach (function (productOk, key) {
-    if (productOk.id == newID && productOk.color == selectColors.value) {
-      productInLocalStorage[key].quantity = parseInt(productOk.quantity) + parseInt(selectQuantity.value);
-      localStorage.setItem('product', JSON.stringify(productInLocalStorage));
-      update = true;
-      addConfirm();
+};
+
+/**
+ * addition or update of the basket (id and name of the article)
+ * @param { String } id
+ * @param { String } name
+ **/
+function CartManagement(id, name) {
+  // Adding the requested item to the basket
+  document.getElementById("addToCart").addEventListener("click", (event) => {
+    // Check that the quantity and color are filled in
+    if (
+      document.getElementById("quantity").value > 0 &&
+      document.getElementById("quantity").value <= 100 &&
+      document.getElementById("colors").value != ""
+    ) {
+      // retrieving the current localStorage
+      let basket = JSON.parse(localStorage.getItem("kanapBasket"));
+
+      // Creates a Json object including the info of the targeted article
+      let article = {
+        id: id,
+        quantity: document.getElementById("quantity").value,
+        colors: document.getElementById("colors").value,
+      };
+
+      // If the retrieved cart (localStorage) contains one or more items
+      if (basket) {
+        console.log("Cart containing content, I verify");
+
+        // We search here among the items in the basket to retrieve if the one we want to add is already there
+        const articlePresent = basket.find(
+          (el) => el.id === article.id && el.colors === article.colors
+        );
+
+        if (articlePresent) {
+          console.log(
+            "Product found, so I don't add, I adjust the quantity"
+          );
+          articlePresent.quantity =
+            parseInt(article.quantity) + parseInt(articlePresent.quantity);
+          localStorage.setItem("kanapBasket", JSON.stringify(basket));
+          popUpCart(name);
+        } else {
+          console.log("Product not found, so i add");
+          basket.push(article);
+          localStorage.setItem("kanapBasket", JSON.stringify(basket));
+          popUpCart(name);
+        }
+      } else {
+        console.log("Cart empty, so I'm adding");
+        basket = [];
+        basket.push(article);
+        localStorage.setItem("kanapBasket", JSON.stringify(basket));
+        popUpCart(name);
+      }
+
+      console.log(basket);
+      console.log(localStorage);
+    } else {
+      alert("You must fill in the number of items and the color.");
     }
   });
+}
 
-  //
-    if (!update) {
-    addProductLocalStorage();
-    addConfirm();
-    }
-  }
-
-  else {
-    productInLocalStorage = [];
-    addProductLocalStorage();
-    addConfirm();
-  }
-});
+// localStorage.clear();
