@@ -32,7 +32,7 @@ const createProductItem = async () => {
   createProductTitle(product.name);
   createProductDescription(product.description);
   createProductPrice(product.price);
-  createProductcolours(product.colours);
+  createProductcolours(product.colors);
 };
 
 /*
@@ -77,7 +77,7 @@ function createProductDescription(description) {
  * Implementation of the colours on the product page
  */
 function createProductcolours(colours) {
-  const productcolours = document.getElementById("colours");
+  const productcolours = document.getElementById("colors");
   for (i = 0; i <= colours.length - 1; i++) {
     const options = document.createElement("option");
     options.value = colours[`${i}`];
@@ -106,12 +106,18 @@ function allSelectedOptions() {
   const quantityChoose = parseInt(
     document.getElementById("quantity").value
   );
-  const colours = document.getElementById("colours");
+  const colours = document.getElementById("colors");
   const colourselected = colours.options[colours.selectedIndex].value;
   if (colourselected == "" || quantityChoose == 0) {
     console.error("All fields are mandatory");
+    alert("Must select a Color and a Valid Quantity")
   } else {
     addToCart(quantityChoose, colourselected);
+    let confirmBox = confirm("Continue to Cart?");
+    if(confirmBox) {
+      window.location.href ="../html/cart.html"
+    }
+    
   }
 }
 
