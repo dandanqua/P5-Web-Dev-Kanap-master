@@ -1,10 +1,15 @@
-// Retrieve the id transmitted in the links to display it
-function getOrderId() {
-  let actualUrl = document.location.href;
-  actualUrl = new URL(actualUrl);
-  let id = actualUrl.searchParams.get("id");
+/*
+  * Get the confirmation id from the url
+*/
+const url = new URL(window.location.href);
+const id = url.searchParams.get("id");
 
-  // show order id in text
-  document.getElementById("orderId").textContent = id;
+/*
+  * Displays the confirmation id on the page
+*/
+function showOrderId() {
+  const idContainer = document.getElementById("orderId");
+  idContainer.innerText = id;
 }
-getOrderId();
+
+showOrderId();
