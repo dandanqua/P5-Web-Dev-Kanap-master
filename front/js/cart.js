@@ -1,19 +1,19 @@
 /*
- * Retrieves the user's localStorage
- */
+* Retrieves the user's localStorage
+*/
 const dataStorage = JSON.parse(localStorage.getItem("cart"));
- 
+
 /*
- * Retrieves product data from the api
- */
+* Retrieves product data from the api
+*/
 async function retrieveProductData(id) {
   return (await fetch(`http://localhost:3000/api/products/${id}`)).json();
 }
- 
+
 /*
- * Calls the function to retrieve product information
- * Returns an error console if retrieval is not possible
- */
+* Calls the function to retrieve product information
+* Returns an error console if retrieval is not possible
+*/
 const getProductData = async (id) => {
   try {
     return retrieveProductData(id);
@@ -21,10 +21,9 @@ const getProductData = async (id) => {
     console.error("Error retrieving product data");
   }
 };
- 
 /*
- * Create the global article that will contain the chosen product
- */
+* Create the global article that will contain the chosen product
+*/
 const createCardProduct = async (data) => {
   const product = await retrieveProductData(data.id);
   const cardItem = document.getElementById("cart__items");
@@ -37,10 +36,10 @@ const createCardProduct = async (data) => {
   showInfosItem(articleItem, product.name, data.color, product.price);
   showSettingsItem(articleItem, data.quantity);
 };
- 
+
 /*
- * Create the modification part of the product
- */
+* Create the modification part of the product
+*/
 function showSettingsItem(container, quantity) {
   const settingsItem = document.createElement("div");
   settingsItem.setAttribute("class", "cart__item__settings");
@@ -48,10 +47,10 @@ function showSettingsItem(container, quantity) {
   showQuantityProduct(settingsItem, quantity);
   showDeletedProduct(settingsItem);
 }
- 
+
 /*
- * Create the product information section
- */
+* Create the product information section
+*/
 function showInfosItem(container, name, color, price) {
   const infosItem = document.createElement("div");
   infosItem.setAttribute("class", "cart__item__content");
@@ -63,54 +62,45 @@ function showInfosItem(container, name, color, price) {
   showColorProduct(descriptionItem, color);
   showPriceProduct(descriptionItem, price);
 }
- 
 /*
- * Display the image of the selected product
- */
+* Display the image of the selected product
+*/
 function showImageProduct(container, altTxt, image) {
   const itemImg = document.createElement("div");
   itemImg.setAttribute("class", "cart__item__img");
   container.appendChild(itemImg);
- 
   const img = document.createElement("img");
   img.setAttribute("src", image);
   img.setAttribute("alt", altTxt);
   itemImg.appendChild(img);
 }
- 
 /*
- * Display the name of the selected product
- */
+* Display the name of the selected product
+*/
 function showTitleProduct(div, title) {
   const titleItem = document.createElement("h2");
   titleItem.innerText = title;
- 
   div.appendChild(titleItem);
 }
- 
 /*
- * Display the chosen colour for the selected product
- */
+* Display the chosen colour for the selected product
+*/
 function showColorProduct(div, color) {
   const colorItem = document.createElement("p");
   colorItem.innerText = color;
- 
   div.appendChild(colorItem);
 }
- 
 /*
- * Display the price for the selected product
- */
+* Display the price for the selected product
+*/
 function showPriceProduct(div, price) {
   const priceItem = document.createElement("p");
   priceItem.innerText = price + "€";
- 
   div.appendChild(priceItem);
 }
- 
 /*
- * Display the quantity selector with the quantity chosen for the selected product
- */
+* Display the quantity selector with the quantity chosen for the selected product
+*/
 function showQuantityProduct(div, quantity) {
   const settingsQuantity = document.createElement("div");
   settingsQuantity.setAttribute(
@@ -118,11 +108,9 @@ function showQuantityProduct(div, quantity) {
     "cart__item__content__settings__quantity"
   );
   div.appendChild(settingsQuantity);
- 
   const quantityItem = document.createElement("p");
-  quantityItem.innerText = "Qté :";
+  quantityItem.innerText = "Qty :";
   settingsQuantity.appendChild(quantityItem);
- 
   const quantityInput = document.createElement("input");
   quantityInput.setAttribute("type", "number");
   quantityInput.setAttribute("class", "itemQuantity");
@@ -132,10 +120,9 @@ function showQuantityProduct(div, quantity) {
   quantityInput.setAttribute("value", `${quantity}`);
   settingsQuantity.appendChild(quantityInput);
 }
- 
 /*
- * Show the button to delete a product
- */
+* Show the button to delete a product
+*/
 function showDeletedProduct(div) {
   const settingsDeleted = document.createElement("div");
   settingsDeleted.setAttribute(
@@ -143,16 +130,18 @@ function showDeletedProduct(div) {
     "cart__item__content__settings__delete"
   );
   div.appendChild(settingsDeleted);
- 
   const deletedProduct = document.createElement("p");
   deletedProduct.setAttribute("class", "deleteItem");
   deletedProduct.innerText = "To delete";
   settingsDeleted.appendChild(deletedProduct);
+  let articleDOM = deletedProduct.closest("article");
+  let id = articleDOM.dataset.id;
+  let color = articleDOM.dataset.color;
+  deletedProduct.addEventListener("click", (e) => deletesProduct(e, id, color))
 }
- 
 /*
- * Listen when there is a change input on the page for each product, then update its quantity
- */
+* Listen when there is a change input on the page for each product, then update its quantity
+*/
 addEventListener("input", function () {
   let quantitySelector = document.getElementsByClassName("itemQuantity");
   for (let i = 0; i < quantitySelector.length; i++) {
@@ -176,17 +165,24 @@ addEventListener("input", function () {
     });
   }
 });
- 
 /*
- * For each product, if a click is made on the delete button, delete it
- */
-window.onload = () => {
+* For each product, if a click is made on the delete button, delete it
+*/
+const deletesProduct = (event, id, color) => {
+  event.preventDefault()
+  console.log("The id is: ", id)
+  console.log("The color is: ", color)
+  let cart = dataStorage.filter(data => data.id !== id || (data.id === id && data.color !== color));
+  localStorage.setItem("cart",JSON.stringify(cart));
+  window.location.reload();
+}
   let productDeleted = document.getElementsByClassName("deleteItem");
   for (let i = 0; i < productDeleted.length; i++) {
-    productDeleted[i].addEventListener("click", (e) => {
+    productDeleted[i].addEventListener("click", () => {
       let articleDOM = productDeleted[i].closest("article");
       const productToClear = dataStorage.indexOf(dataStorage[i]);
-      dataStorage.splice(productToClear, 1);
+      dataStorage.splice(productToClear, 0);
+      console.log("data storage in delete: ", dataStorage)
       articleDOM.remove();
       if (localStorage != undefined) {
         localStorage.setItem("cart", JSON.stringify(dataStorage));
@@ -194,15 +190,14 @@ window.onload = () => {
         localStorage.clear();
       }
       totalRefresh();
-      console.log("Product removed from cart");
-      location.reload()
+      console.log("productlocalStorage");
+      window.location.reload();
     });
   }
-};
- 
+
 /*
- * Displays the present value of the total number of items and the price
- */
+* Displays the present value of the total number of items and the price
+*/
 const totalRefresh = async () => {
   let totalCartPrice = 0;
   let totalCartQty = 0;
@@ -220,20 +215,17 @@ const totalRefresh = async () => {
   const totalPrice = document.getElementById("totalPrice");
   totalPrice.innerText = totalCartPrice;
 };
- 
 /*
- * Displays an error message if there is an incorrect field on the form
- */
+* Displays an error message if there is an incorrect field on the form
+*/
 function showErrorMsg(errorId, nameField) {
   let errorContainer = document.getElementById(`${errorId}`);
   errorContainer.innerHTML = `${nameField} is invalid`;
 }
- 
 const globalRegex = new RegExp("^[A-Za-zéèêëàâîïôöûü-]+$");
- 
 /*
- * Checks that the form field "first name" matches the defined regex
- */
+* Checks that the form field "first name" matches the defined regex
+*/
 function verifyFirstName(prenom) {
   let fieldIsCorrect = false;
   if (globalRegex.test(prenom)) {
@@ -243,10 +235,9 @@ function verifyFirstName(prenom) {
   }
   return fieldIsCorrect;
 }
- 
 /*
- * Checks that the form field "last name" matches the defined regex
- */
+* Checks that the form field "last name" matches the defined regex
+*/
 function verifyLastName(nom) {
   let fieldIsCorrect = false;
   if (globalRegex.test(nom)) {
@@ -256,10 +247,9 @@ function verifyLastName(nom) {
   }
   return fieldIsCorrect;
 }
- 
 /*
- * Checks that the form field "address" matches the defined regex
- */
+* Checks that the form field "address" matches the defined regex
+*/
 function verifyAddress(adresse) {
   let fieldIsCorrect = false;
   const adresseRegex = new RegExp(
@@ -272,10 +262,9 @@ function verifyAddress(adresse) {
   }
   return fieldIsCorrect;
 }
- 
 /*
- * Checks that the form field "city" matches the defined regex
- */
+* Checks that the form field "city" matches the defined regex
+*/
 function verifyCity(ville) {
   let fieldIsCorrect = false;
   if (globalRegex.test(ville)) {
@@ -285,10 +274,9 @@ function verifyCity(ville) {
   }
   return fieldIsCorrect;
 }
- 
 /*
- * Checks that the form field "email" matches the defined regex
- */
+* Checks that the form field "email" matches the defined regex
+*/
 function verifyEmail(email) {
   let fieldIsCorrect = false;
   if (
@@ -302,10 +290,9 @@ function verifyEmail(email) {
   }
   return fieldIsCorrect;
 }
- 
 /*
- * Sends a request to the api containing all the information entered and redirects to the confirmation
- */
+* Sends a request to the api containing all the information entered and redirects to the confirmation
+*/
 function sendRequestToApi(body) {
   fetch("http://localhost:3000/api/products/order", {
     method: "POST",
@@ -327,10 +314,9 @@ function sendRequestToApi(body) {
       window.location.href = `confirmation.html?id=${id}`;
     });
 }
- 
 /*
- * Listen to the submit event then check the form fields and run the confirmation procedure
- */
+* Listen to the submit event then check the form fields and run the confirmation procedure
+*/
 addEventListener("submit", function (e) {
   e.preventDefault();
   let prenom = e.target.firstName.value;
@@ -350,10 +336,9 @@ addEventListener("submit", function (e) {
     console.error("Not all fields are filled in correctly");
   }
 });
- 
 /*
- * Create the send object in the body of the request
- */
+* Create the send object in the body of the request
+*/
 function createBodyRequest(prenom, nom, adresse, ville, mail) {
   let idProducts = [];
   for (let i = 0; i < dataStorage.length; i++) {
@@ -371,7 +356,6 @@ function createBodyRequest(prenom, nom, adresse, ville, mail) {
   };
   return bodyContent;
 }
- 
 /* Global function retrieving the localStorage to display the products on the page*/
 function displayProducts() {
   if (localStorage.length != 0) {
@@ -381,5 +365,4 @@ function displayProducts() {
   }
   totalRefresh();
 }
- 
 displayProducts();
