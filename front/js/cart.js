@@ -1,19 +1,14 @@
-/*
-* Retrieves the user's localStorage
-*/
+// Retrieves the user's localStorage
 const dataStorage = JSON.parse(localStorage.getItem("cart"));
 
-/*
-* Retrieves product data from the api
-*/
+// Retrieves product data from the api
 async function retrieveProductData(id) {
   return (await fetch(`http://localhost:3000/api/products/${id}`)).json();
 }
 
-/*
-* Calls the function to retrieve product information
-* Returns an error console if retrieval is not possible
-*/
+// Calls the function to retrieve product information
+// Returns an error console if retrieval is not possible
+
 const getProductData = async (id) => {
   try {
     return retrieveProductData(id);
@@ -21,9 +16,7 @@ const getProductData = async (id) => {
     console.error("Error retrieving product data");
   }
 };
-/*
-* Create the global article that will contain the chosen product
-*/
+// Create the global article that will contain the chosen product
 const createCardProduct = async (data) => {
   const product = await retrieveProductData(data.id);
   const cardItem = document.getElementById("cart__items");
@@ -37,9 +30,7 @@ const createCardProduct = async (data) => {
   showSettingsItem(articleItem, data.quantity);
 };
 
-/*
-* Create the modification part of the product
-*/
+// Create the modification part of the product
 function showSettingsItem(container, quantity) {
   const settingsItem = document.createElement("div");
   settingsItem.setAttribute("class", "cart__item__settings");
@@ -48,23 +39,24 @@ function showSettingsItem(container, quantity) {
   showDeletedProduct(settingsItem);
 }
 
-/*
-* Create the product information section
-*/
+// Inserting the "div" element
 function showInfosItem(container, name, color, price) {
   const infosItem = document.createElement("div");
+  // the "div" element for the product description
   infosItem.setAttribute("class", "cart__item__content");
   container.appendChild(infosItem);
+  // Insert the "div" element
   const descriptionItem = document.createElement("div");
   descriptionItem.setAttribute("class", "cart__item__content__description");
   infosItem.appendChild(descriptionItem);
+  // Insert the "name" element
   showTitleProduct(descriptionItem, name);
+  // Insert the "colour" element
   showColorProduct(descriptionItem, color);
+  // Insert the "price" element
   showPriceProduct(descriptionItem, price);
 }
-/*
-* Display the image of the selected product
-*/
+// Display the image of the selected product
 function showImageProduct(container, altTxt, image) {
   const itemImg = document.createElement("div");
   itemImg.setAttribute("class", "cart__item__img");
@@ -74,42 +66,38 @@ function showImageProduct(container, altTxt, image) {
   img.setAttribute("alt", altTxt);
   itemImg.appendChild(img);
 }
-/*
-* Display the name of the selected product
-*/
+// Display the name of the selected product the h2 title
 function showTitleProduct(div, title) {
   const titleItem = document.createElement("h2");
   titleItem.innerText = title;
   div.appendChild(titleItem);
 }
-/*
-* Display the chosen colour for the selected product
-*/
+// Display the chosen colour for the selected product
 function showColorProduct(div, color) {
   const colorItem = document.createElement("p");
   colorItem.innerText = color;
   div.appendChild(colorItem);
+  colorItem.style.fontSize = "20px";
 }
-/*
-* Display the price for the selected product
-*/
+// Display the price for the selected product
 function showPriceProduct(div, price) {
   const priceItem = document.createElement("p");
   priceItem.innerText = price + "€";
   div.appendChild(priceItem);
+  priceItem.style.fontSize = "20px";
 }
-/*
-* Display the quantity selector with the quantity chosen for the selected product
-*/
+// Display the quantity selector with the quantity chosen for the selected product
 function showQuantityProduct(div, quantity) {
   const settingsQuantity = document.createElement("div");
   settingsQuantity.setAttribute(
     "class",
     "cart__item__content__settings__quantity"
   );
+  // Insertion of "Qty"
   div.appendChild(settingsQuantity);
   const quantityItem = document.createElement("p");
   quantityItem.innerText = "Qty :";
+  //Inserting the quantity
   settingsQuantity.appendChild(quantityItem);
   const quantityInput = document.createElement("input");
   quantityInput.setAttribute("type", "number");
@@ -120,19 +108,18 @@ function showQuantityProduct(div, quantity) {
   quantityInput.setAttribute("value", `${quantity}`);
   settingsQuantity.appendChild(quantityInput);
 }
-/*
-* Show the button to delete a product
-*/
+// Show the button to delete a product div element
 function showDeletedProduct(div) {
   const settingsDeleted = document.createElement("div");
   settingsDeleted.setAttribute(
     "class",
     "cart__item__content__settings__delete"
   );
+  // Inserting the "p" delete
   div.appendChild(settingsDeleted);
   const deletedProduct = document.createElement("p");
   deletedProduct.setAttribute("class", "deleteItem");
-  deletedProduct.innerText = "To delete";
+  deletedProduct.innerText = "Delete";
   settingsDeleted.appendChild(deletedProduct);
   let articleDOM = deletedProduct.closest("article");
   let id = articleDOM.dataset.id;
@@ -151,6 +138,7 @@ addEventListener("input", function () {
         console.error("The quantity must be between 1 and 100");
         productQuantity = `${dataStorage[i].quantity}`;
       } else {
+        // save the id and color selected by the delete button
         dataStorage.map((obj) => {
           if (
             (obj.id == dataStorage[i].id, obj.color == dataStorage[i].color)
@@ -172,6 +160,7 @@ const deletesProduct = (event, id, color) => {
   event.preventDefault()
   console.log("The id is: ", id)
   console.log("The color is: ", color)
+  // filter the element clicked by the delete button
   let cart = dataStorage.filter(data => data.id !== id || (data.id === id && data.color !== color));
   localStorage.setItem("cart",JSON.stringify(cart));
   window.location.reload();
@@ -184,6 +173,7 @@ const deletesProduct = (event, id, color) => {
       dataStorage.splice(productToClear, 0);
       console.log("data storage in delete: ", dataStorage)
       articleDOM.remove();
+      // If there are no products in the local storage, the basket is displayed as empty
       if (localStorage != undefined) {
         localStorage.setItem("cart", JSON.stringify(dataStorage));
       } else {
@@ -191,6 +181,7 @@ const deletesProduct = (event, id, color) => {
       }
       totalRefresh();
       console.log("productlocalStorage");
+      // refresh the page
       window.location.reload();
     });
   }
@@ -210,26 +201,32 @@ const totalRefresh = async () => {
       totalCartQty += parseInt(itemStorage.quantity);
     }
   }
+  // Retrieve the total quantities
   const totalQuantity = document.getElementById("totalQuantity");
   totalQuantity.innerText = totalCartQty;
+  // Retrieve the total price
   const totalPrice = document.getElementById("totalPrice");
   totalPrice.innerText = totalCartPrice;
 };
-/*
-* Displays an error message if there is an incorrect field on the form
-*/
+// Displays an error message if there is an incorrect field on the form
 function showErrorMsg(errorId, nameField) {
   let errorContainer = document.getElementById(`${errorId}`);
   errorContainer.innerHTML = `${nameField} is invalid`;
 }
+
+// Clear error message of a from field.
+function clearErrorMsg(errorId) {
+  let errorContainer = document.getElementById(`${errorId}`);
+  errorContainer.innerHTML = '';
+}
+
 const globalRegex = new RegExp("^[A-Za-zéèêëàâîïôöûü-]+$");
-/*
-* Checks that the form field "first name" matches the defined regex
-*/
-function verifyFirstName(prenom) {
+// Checks that the form field "first name" matches the defined regex
+function verifyFirstName(firstname) {
   let fieldIsCorrect = false;
-  if (globalRegex.test(prenom)) {
+  if (globalRegex.test(firstname)) {
     fieldIsCorrect = true;
+    clearErrorMsg("firstNameErrorMsg")
   } else {
     showErrorMsg("firstNameErrorMsg", "First name");
   }
@@ -238,10 +235,12 @@ function verifyFirstName(prenom) {
 /*
 * Checks that the form field "last name" matches the defined regex
 */
-function verifyLastName(nom) {
+function verifyLastName(lastName) {
   let fieldIsCorrect = false;
-  if (globalRegex.test(nom)) {
+  if (globalRegex.test(lastName)) {
     fieldIsCorrect = true;
+    clearErrorMsg("lastNameErrorMsg")
+
   } else {
     showErrorMsg("lastNameErrorMsg", "Name");
   }
@@ -250,13 +249,14 @@ function verifyLastName(nom) {
 /*
 * Checks that the form field "address" matches the defined regex
 */
-function verifyAddress(adresse) {
+function verifyAddress(address) {
   let fieldIsCorrect = false;
   const adresseRegex = new RegExp(
     "([0-9]*)?([a-zA-Z]*)"
   );
-  if (adresseRegex.test(adresse)) {
+  if (adresseRegex.test(address)) {
     fieldIsCorrect = true;
+    clearErrorMsg("addressErrorMsg")
   } else {
     showErrorMsg("addressErrorMsg", "Address");
   }
@@ -265,10 +265,11 @@ function verifyAddress(adresse) {
 /*
 * Checks that the form field "city" matches the defined regex
 */
-function verifyCity(ville) {
+function verifyCity(city) {
   let fieldIsCorrect = false;
-  if (globalRegex.test(ville)) {
+  if (globalRegex.test(city)) {
     fieldIsCorrect = true;
+    clearErrorMsg("cityErrorMsg")
   } else {
     showErrorMsg("cityErrorMsg", "Town");
   }
@@ -285,6 +286,8 @@ function verifyEmail(email) {
     )
   ) {
     fieldIsCorrect = true;
+    clearErrorMsg("emailErrorMsg")
+
   } else {
     showErrorMsg("emailErrorMsg", "Email");
   }
@@ -319,19 +322,19 @@ function sendRequestToApi(body) {
 */
 addEventListener("submit", function (e) {
   e.preventDefault();
-  let prenom = e.target.firstName.value;
-  let nom = e.target.lastName.value;
-  let adresse = e.target.address.value;
-  let ville = e.target.city.value;
+  let firstName = e.target.firstName.value;
+  let lastName = e.target.lastName.value;
+  let address = e.target.address.value;
+  let city = e.target.city.value;
   let email = e.target.email.value;
   if (
-    verifyFirstName(prenom) &&
-    verifyLastName(nom) &&
-    verifyAddress(adresse) &&
-    verifyCity(ville) &&
+    verifyFirstName(firstName) &&
+    verifyLastName(lastName) &&
+    verifyAddress(address) &&
+    verifyCity(city) &&
     verifyEmail(email)
   ) {
-    sendRequestToApi(createBodyRequest(prenom, nom, adresse, ville, email));
+    sendRequestToApi(createBodyRequest(firstName, lastName, address, city, email));
   } else {
     console.error("Not all fields are filled in correctly");
   }
@@ -339,17 +342,17 @@ addEventListener("submit", function (e) {
 /*
 * Create the send object in the body of the request
 */
-function createBodyRequest(prenom, nom, adresse, ville, mail) {
+function createBodyRequest(firstName, lastName, address, city, mail) {
   let idProducts = [];
   for (let i = 0; i < dataStorage.length; i++) {
     idProducts.push(dataStorage[i].id);
   }
   const bodyContent = {
     contact: {
-      firstName: prenom,
-      lastName: nom,
-      address: adresse,
-      city: ville,
+      firstName: firstName,
+      lastName: lastName,
+      address: address,
+      city: city,
       email: mail,
     },
     products: idProducts,

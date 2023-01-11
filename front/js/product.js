@@ -110,10 +110,10 @@ function allSelectedOptions() {
   const colourselected = colours.options[colours.selectedIndex].value;
   if (colourselected == "" || quantityChoose == 0) {
     console.error("All fields are mandatory");
-    alert("Must select a Color and a Valid Quantity")
+    alert("please select a Color and a Valid Quantity")
   } else {
     addToCart(quantityChoose, colourselected);
-    let confirmBox = confirm("Continue to Cart?");
+    let confirmBox = confirm("do you want to continue to Cart?");
     if(confirmBox) {
       window.location.href ="../html/cart.html"
     }
